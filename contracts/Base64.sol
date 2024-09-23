@@ -1,123 +1,78 @@
-// SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v5.0.2) (utils/Base64.sol)
-
-pragma solidity ^0.8.20;
-
 /**
- * @dev Provides a set of functions to operate with Base64 strings.
+ *Submitted for verification at Etherscan.io on 2021-09-05
  */
+
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+/// [MIT License]
+/// @title Base64
+/// @notice Provides a function for encoding some bytes in base64
+/// @author Brecht Devos <brecht@loopring.org>
 library Base64 {
-    /**
-     * @dev Base64 Encoding/Decoding Table
-     * See sections 4 and 5 of https://datatracker.ietf.org/doc/html/rfc4648
-     */
-    string internal constant _TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    string internal constant _TABLE_URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    bytes internal constant TABLE =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    /**
-     * @dev Converts a `bytes` to its Bytes64 `string` representation.
-     */
+    /// @notice Encodes some bytes to the base64 representation
     function encode(bytes memory data) internal pure returns (string memory) {
-        return _encode(data, _TABLE, true);
-    }
+        uint256 len = data.length;
+        if (len == 0) return "";
 
-    /**
-     * @dev Converts a `bytes` to its Bytes64Url `string` representation.
-     * Output is not padded with `=` as specified in https://www.rfc-editor.org/rfc/rfc4648[rfc4648].
-     */
-    function encodeURL(bytes memory data) internal pure returns (string memory) {
-        return _encode(data, _TABLE_URL, false);
-    }
+        // multiply by 4/3 rounded up
+        uint256 encodedLen = 4 * ((len + 2) / 3);
 
-    /**
-     * @dev Internal table-agnostic conversion
-     */
-    function _encode(bytes memory data, string memory table, bool withPadding) private pure returns (string memory) {
-        /**
-         * Inspired by Brecht Devos (Brechtpd) implementation - MIT licence
-         * https://github.com/Brechtpd/base64/blob/e78d9fd951e7b0977ddca77d92dc85183770daf4/base64.sol
-         */
-        if (data.length == 0) return "";
+        // Add some extra buffer at the end
+        bytes memory result = new bytes(encodedLen + 32);
 
-        // If padding is enabled, the final length should be `bytes` data length divided by 3 rounded up and then
-        // multiplied by 4 so that it leaves room for padding the last chunk
-        // - `data.length + 2`  -> Prepare for division rounding up
-        // - `/ 3`              -> Number of 3-bytes chunks (rounded up)
-        // - `4 *`              -> 4 characters for each chunk
-        // This is equivalent to: 4 * Math.ceil(data.length / 3)
-        //
-        // If padding is disabled, the final length should be `bytes` data length multiplied by 4/3 rounded up as
-        // opposed to when padding is required to fill the last chunk.
-        // - `4 * data.length`  -> 4 characters for each chunk
-        // - ` + 2`             -> Prepare for division rounding up
-        // - `/ 3`              -> Number of 3-bytes chunks (rounded up)
-        // This is equivalent to: Math.ceil((4 * data.length) / 3)
-        uint256 resultLength = withPadding ? 4 * ((data.length + 2) / 3) : (4 * data.length + 2) / 3;
+        bytes memory table = TABLE;
 
-        string memory result = new string(resultLength);
-
-        assembly ("memory-safe") {
-            // Prepare the lookup table (skip the first "length" byte)
+        assembly {
             let tablePtr := add(table, 1)
+            let resultPtr := add(result, 32)
 
-            // Prepare result pointer, jump over length
-            let resultPtr := add(result, 0x20)
-            let dataPtr := data
-            let endPtr := add(data, mload(data))
-
-            // In some cases, the last iteration will read bytes after the end of the data. We cache the value, and
-            // set it to zero to make sure no dirty bytes are read in that section.
-            let afterPtr := add(endPtr, 0x20)
-            let afterCache := mload(afterPtr)
-            mstore(afterPtr, 0x00)
-
-            // Run over the input, 3 bytes at a time
             for {
-
-            } lt(dataPtr, endPtr) {
+                let i := 0
+            } lt(i, len) {
 
             } {
-                // Advance 3 bytes
-                dataPtr := add(dataPtr, 3)
-                let input := mload(dataPtr)
+                i := add(i, 3)
+                let input := and(mload(add(data, i)), 0xffffff)
 
-                // To write each character, shift the 3 byte (24 bits) chunk
-                // 4 times in blocks of 6 bits for each character (18, 12, 6, 0)
-                // and apply logical AND with 0x3F to bitmask the least significant 6 bits.
-                // Use this as an index into the lookup table, mload an entire word
-                // so the desired character is in the least significant byte, and
-                // mstore8 this least significant byte into the result and continue.
+                let out := mload(add(tablePtr, and(shr(18, input), 0x3F)))
+                out := shl(8, out)
+                out := add(
+                    out,
+                    and(mload(add(tablePtr, and(shr(12, input), 0x3F))), 0xFF)
+                )
+                out := shl(8, out)
+                out := add(
+                    out,
+                    and(mload(add(tablePtr, and(shr(6, input), 0x3F))), 0xFF)
+                )
+                out := shl(8, out)
+                out := add(
+                    out,
+                    and(mload(add(tablePtr, and(input, 0x3F))), 0xFF)
+                )
+                out := shl(224, out)
 
-                mstore8(resultPtr, mload(add(tablePtr, and(shr(18, input), 0x3F))))
-                resultPtr := add(resultPtr, 1) // Advance
+                mstore(resultPtr, out)
 
-                mstore8(resultPtr, mload(add(tablePtr, and(shr(12, input), 0x3F))))
-                resultPtr := add(resultPtr, 1) // Advance
-
-                mstore8(resultPtr, mload(add(tablePtr, and(shr(6, input), 0x3F))))
-                resultPtr := add(resultPtr, 1) // Advance
-
-                mstore8(resultPtr, mload(add(tablePtr, and(input, 0x3F))))
-                resultPtr := add(resultPtr, 1) // Advance
+                resultPtr := add(resultPtr, 4)
             }
 
-            // Reset the value that was cached
-            mstore(afterPtr, afterCache)
-
-            if withPadding {
-                // When data `bytes` is not exactly 3 bytes long
-                // it is padded with `=` characters at the end
-                switch mod(mload(data), 3)
-                case 1 {
-                    mstore8(sub(resultPtr, 1), 0x3d)
-                    mstore8(sub(resultPtr, 2), 0x3d)
-                }
-                case 2 {
-                    mstore8(sub(resultPtr, 1), 0x3d)
-                }
+            switch mod(len, 3)
+            case 1 {
+                mstore(sub(resultPtr, 2), shl(240, 0x3d3d))
             }
+            case 2 {
+                mstore(sub(resultPtr, 1), shl(248, 0x3d))
+            }
+
+            mstore(result, encodedLen)
         }
 
-        return result;
+        return string(result);
     }
 }
