@@ -1,68 +1,36 @@
 # OnChainNFT
 
-OnChainNFT is a Solidity smart contract that allows the minting of Non-Fungible Tokens (NFTs) directly on-chain, using SVG images encoded in Base64 format. This contract leverages OpenZeppelin's libraries for enhanced security and functionality.
+OnChainNFT is a Solidity smart contract that enables the creation and minting of on-chain NFTs using SVG images. It utilizes Base64 encoding to store image data directly on-chain and follows the ERC721 token standard.
 
 ## Features
 
-- **Base64 Encoding**: Converts SVG images to Base64 strings, allowing for on-chain storage and retrieval.
-- **SVG Image Support**: Mint NFTs with custom SVG images as their metadata.
-- **ERC721 Compliant**: Implements the ERC721 standard with URI storage for each token.
-- **Ownership**: Only the contract owner can mint new NFTs.
+- **SVG-to-Base64 Encoding**: Converts SVG images to Base64 strings to store them on-chain.
+- **TokenURI Generation**: Generates token metadata (name, description, image) in JSON format encoded as Base64.
+- **Minting**: The contract allows the owner to mint NFTs, each associated with an SVG image.
+- **ERC721 Compliance**: Implements the ERC721 standard with the `ERC721URIStorage` extension for storing metadata on-chain.
 
-## Contract Details
+## Technologies
 
-- **Contract Name**: `OnChainNFT`
-- **Symbol**: `ONC`
-- **Base64 Encoding**: Uses a custom Base64 library for encoding SVG images.
-- **Events**: Emits a `Minted` event with the token ID whenever a new NFT is minted.
+- **Solidity**: ^0.8.4
+- **OpenZeppelin Contracts**: Used for standard contract modules like `ERC721URIStorage` and `Ownable`.
+- **Base64 Encoding**: A custom library is used to encode data as Base64 strings for on-chain storage.
 
-## Installation
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Gifftybabe/OnChainNFT.git
-   cd OnChainNFT
-   ```
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+### Minting
 
-3. **Compile the contract**:
-   ```bash
-   npx hardhat compile
-   ```
+To mint an NFT, call the `mint` function with an SVG string. This converts the SVG into a Base64 string and stores the resulting tokenURI on-chain.
 
-4. **Deploy the contract**:
-   ```bash
-   npx hardhat run scripts/deploy.js
-   ```
+```solidity
+mint("<svg>...</svg>");
+```
 
-## Usage
+### Example
 
-1. **Minting an NFT**:
-   - Modify the SVG image in the `scripts/deploy.js` file to your desired SVG content.
-   - Run the deployment script to mint the NFT:
-     ```bash
-     npx hardhat run scripts/deploy.js
-     ```
+Here is an example of how the contract works:
 
-2. **View the Minted NFT**:
-   - The minted NFT can be viewed on a supported marketplace like OpenSea using the provided token ID and contract address.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- This project utilizes the [OpenZeppelin Contracts](https://openzeppelin.com/contracts/) library.
-- Base64 encoding inspired by Brecht Devos' implementation.
-
-## Contact
-
-For any inquiries or support, please reach out to [ulokangozi@gmail.com](mailto:ulokangozi@gmail.com).
-
----
-
+1. **Convert SVG to Base64**:
+   The contract takes an SVG image, encodes it to Base64, and stores it on-chain.
+   
+2. **Mint a Token**:
+   The `mint` function is called by the owner, and a new token is minted with the associated metadata.
