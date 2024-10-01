@@ -1,4 +1,4 @@
-import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+const  { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
 const OnChainNFTModule = buildModule("OnChainNFTModule", (m) => {
 
@@ -7,4 +7,4 @@ const OnChainNFTModule = buildModule("OnChainNFTModule", (m) => {
   return { onChainNFT };
 });
 
-export default OnChainNFTModule;
+module.exports =  OnChainNFTModule;
