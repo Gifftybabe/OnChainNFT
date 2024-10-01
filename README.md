@@ -34,3 +34,9 @@ Here is an example of how the contract works:
    
 2. **Mint a Token**:
    The `mint` function is called by the owner, and a new token is minted with the associated metadata.
+
+## Deployment
+
+The contract have been deployed on the Lisk Sepolia testnet with the following addresses:
+
+- **OnChainNFT"**: `0x7f92f89B9FE3E41C9FB4e71C15Cec8E2f632D6c6`
